@@ -1,0 +1,37 @@
+# # playbook/docker.yml
+# ---
+# - hosts: all
+#   become: yes
+#   vars_prompt:
+#     - name: target_group
+#       prompt: "Enter the inventory group you want to target for Docker installation"
+#       private: no
+
+#         vars:
+#     local_web_files_path: "{{ playbook_dir }}/web_files"
+
+#   hosts: "{{ target_group }}"
+#   roles:
+#     - httpd.yaml
+
+---
+- name: Install Docker and configure web server
+  hosts: all
+  become: yes
+
+  vars_prompt:
+    - name: target_group
+      prompt: "Enter the inventory group you want to target for Docker installation"
+      private: no
+
+  vars:
+    local_web_files_path: "{{ playbook_dir }}/web_files"
+
+  tasks:
+    - name: Set the target group as a fact
+      set_fact:
+        target_group: "{{ target_group }}"
+
+  hosts: "{{ target_group }}"
+  roles:
+    - role: httpd

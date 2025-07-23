@@ -1,0 +1,14 @@
+# roles/httpd/defaults/main.yml
+---
+httpd_package_name: httpd
+httpd_service_name: httpd
+httpd_port: 80
+httpd_document_root: /var/www/html
+httpd_extra_packages:
+  - mod_ssl
+httpd_server_admin: webmaster@localhost
+httpd_enable_firewalld: true
+
+
+# New variable for local files path
+local_web_files_path: "{{ playbook_dir }}/web_files"

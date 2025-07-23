@@ -1,0 +1,5 @@
+mount_point: "/bcs"
+vg_name: "vg_data"
+lv_name: "lv_data"
+device: "/dev/sdb"
+

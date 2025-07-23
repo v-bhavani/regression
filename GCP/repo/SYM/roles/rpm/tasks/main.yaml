@@ -1,0 +1,17 @@
+- name: Copy the agent RPM to the server
+  copy:
+    src: agent.rpm
+    dest: /tmp/agent.rpm
+  notify: Restart Agent Service
+
+- name: Install the agent using RPM
+  yum:
+    name: /tmp/agent.rpm
+    state: present
+  notify: Restart Agent Service
+
+- name: Ensure the agent is installed via YUM
+  yum:
+    name: "{{ agent_name }}"
+    state: present
+  notify: Restart Agent Service

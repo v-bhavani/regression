@@ -1,0 +1,45 @@
+---
+- name: Ensure old versions of Docker are not installed
+  package:
+    name: docker
+    state: absent
+  ignore_errors: yes
+
+- name: Install required system packages (RHEL/CentOS)
+  when: ansible_os_family == "RedHat"
+  yum:
+    name:
+      - yum-utils
+      - device-mapper-persistent-data
+      - lvm2
+    state: present
+
+- name: Install required system packages (Debian/Ubuntu)
+  when: ansible_os_family == "Debian"
+  apt:
+    name:
+      - lsb-release
+      - software-properties-common
+    state: present
+    update_cache: yes
+
+- name: Add Docker repo (RHEL/CentOS)
+  when: ansible_os_family == "RedHat"
+  get_url:
+    url: https://download.docker.com/linux/centos/docker-ce.repo
+    dest: /etc/yum.repos.d/docker-ce.repo
+
+- name: Install Docker
+  yum:
+    name:
+      - docker-ce
+      - docker-ce-cli
+      - containerd.io
+    state: latest
+
+- name: Start and enable Docker service
+  service:
+    name: docker
+    state: started
+    enabled: yes
+

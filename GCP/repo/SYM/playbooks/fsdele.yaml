@@ -1,0 +1,38 @@
+- name: Delete filesystem, LV, VG, PV
+  hosts: all
+  become: true
+  vars_files:
+    - ../vars/fsdeletevar.yaml
+
+  tasks:
+    - name: Unmount filesystem
+      ansible.posix.mount:
+        path: "{{ mount_point }}"
+        state: unmounted
+        fstype: xfs
+      ignore_errors: true
+
+    - name: Remove mount entry from /etc/fstab
+      ansible.builtin.lineinfile:
+        path: /etc/fstab
+        regexp: "^.*{{ mount_point }}.*$"
+        state: absent
+
+    - name: Remove logical volume
+      command: lvremove -f /dev/{{ vg_name }}/{{ lv_name }}
+      register: lvremove_output
+      changed_when: "'successfully removed' in lvremove_output.stdout or 'removed' in lvremove_output.stdout"
+      ignore_errors: true
+
+    - name: Remove volume group
+      command: vgremove -f {{ vg_name }}
+      register: vgremove_output
+      changed_when: "'successfully removed' in vgremove_output.stdout or 'removed' in vgremove_output.stdout"
+      ignore_errors: true
+
+    - name: Remove physical volume
+      command: pvremove -ff -y {{ device }}
+      register: pvremove_output
+      changed_when: "'Labels on physical volume' in pvremove_output.stdout"
+      ignore_errors: true
+

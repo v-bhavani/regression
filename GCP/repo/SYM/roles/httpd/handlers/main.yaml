@@ -1,0 +1,7 @@
+# roles/httpd/handlers/main.yml
+---
+- name: Restart httpd service
+  ansible.builtin.systemd:
+    name: "{{ httpd_service_name }}"
+    state: restarted
+    daemon_reload: yes

@@ -1,0 +1,65 @@
+# roles/httpd/tasks/main.yml
+---
+- name: Install Apache HTTPD and required packages
+  ansible.builtin.package:
+    name: 
+      - "{{ httpd_package_name }}"
+      - "{{ httpd_extra_packages }}"
+    state: present
+  notify: Restart httpd service
+
+- name: Configure Apache server admin
+  ansible.builtin.lineinfile:
+    path: /etc/httpd/conf/httpd.conf
+    regexp: '^ServerAdmin '
+    line: "ServerAdmin {{ httpd_server_admin }}"
+  notify: Restart httpd service
+
+- name: Configure Apache listening port
+  ansible.builtin.lineinfile:
+    path: /etc/httpd/conf/httpd.conf
+    regexp: '^Listen '
+    line: "Listen {{ httpd_port }}"
+  notify: Restart httpd service
+
+- name: Configure document root
+  ansible.builtin.lineinfile:
+    path: /etc/httpd/conf/httpd.conf
+    regexp: '^DocumentRoot '
+    line: "DocumentRoot {{ httpd_document_root }}"
+  notify: Restart httpd service
+
+- name: Ensure document root directory exists
+  ansible.builtin.file:
+    path: "{{ httpd_document_root }}"
+    state: directory
+    mode: '0755'
+    owner: apache
+    group: apache
+
+- name: Copy local files to web server document root
+  ansible.builtin.copy:
+    src: "{{ item }}"
+    dest: "{{ httpd_document_root }}/"
+    owner: apache
+    group: apache
+    mode: '0644'
+  with_fileglob:
+    - "{{ local_web_files_path }}/*"
+  when: local_web_files_path is defined
+  notify: Restart httpd service
+
+- name: Configure firewalld to allow HTTP traffic
+  ansible.posix.firewalld:
+    service: http
+    permanent: yes
+    immediate: yes
+    state: enabled
+  when: httpd_enable_firewalld
+  ignore_errors: yes
+
+- name: Ensure HTTPD service is started and enabled
+  ansible.builtin.systemd:
+    name: "{{ httpd_service_name }}"
+    state: started
+    enabled: yes

@@ -1,0 +1,5 @@
+- name: Restart Agent Service
+  service:
+    name: "{{ agent_name }}"
+    state: restarted
+    enabled: yes
