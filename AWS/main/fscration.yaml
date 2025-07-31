@@ -1,0 +1,49 @@
+---
+- name: Create multiple filesystems
+  hosts: all
+  become: true
+  vars_files:
+    - fscreationvariable.yaml
+
+  tasks:
+    - name: Install lvm2 dependency
+      package:
+        name: lvm2
+        state: present
+
+    - name: Create volume groups
+      lvg:
+        vg: "{{ item.vg_name }}"
+        pvs: "{{ item.pv_device }}"
+        pesize: 16
+      loop: "{{ fs_list }}"
+
+    - name: Create logical volumes
+      lvol:
+        vg: "{{ item.vg_name }}"
+        lv: "{{ item.lv_name }}"
+        size: "{{ item.lv_size }}"
+        force: yes
+      loop: "{{ fs_list }}"
+
+    - name: Create mountpoint directories
+      file:
+        path: "{{ item.mount_point }}"
+        state: directory
+        mode: '0777'
+      loop: "{{ fs_list }}"
+
+    - name: Format the logical volume with xfs
+      filesystem:
+        fstype: "xfs"
+        dev: "/dev/{{ item.vg_name }}/{{ item.lv_name }}"
+      loop: "{{ fs_list }}"
+
+    - name: Mount the logical volume
+      mount:
+        path: "{{ item.mount_point }}"
+        src: "/dev/{{ item.vg_name }}/{{ item.lv_name }}"
+        fstype: "xfs"
+        state: mounted
+      loop: "{{ fs_list }}"
+
