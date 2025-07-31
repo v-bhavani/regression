@@ -1,0 +1,13 @@
+fs_list:
+  - vg_name: vg_data1
+    lv_name: lv_data1
+    pv_device: /dev/xvdb
+    lv_size: 2G
+    mount_point: /data1
+
+#  - vg_name: vg_data2
+#    lv_name: lv_data2
+#    pv_device: /dev/sdc
+#    lv_size: 3G
+#    mount_point: /data2
+
