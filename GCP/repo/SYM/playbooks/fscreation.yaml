@@ -5,10 +5,11 @@
     - ../vars/fscreationvar.yaml
 
   tasks:
-    - name: Install required packages
+    - name: Install required packages (ignore docker-ce-stable repo)
       yum:
         name: "{{ item }}"
         state: present
+        disablerepo: "docker-ce-stable"
       loop:
         - lvm2
         - xfsprogs
@@ -53,4 +54,3 @@
         fstype: xfs
         opts: defaults
         state: present
-
